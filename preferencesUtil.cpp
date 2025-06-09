@@ -12,6 +12,20 @@ void getWiFiCity(){
   city = prefs.getString("city", "");
   adm = prefs.getString("adm", "");
   location = prefs.getString("location", "");
+
+  publicKeyMm = prefs.getString("publicKeyMm");
+  publicKeyMm.toCharArray(charPublicKey, 61);
+  Serial.println("get:" + publicKeyMm);
+  privateKeyMm = prefs.getString("privateKeyMm");
+  privateKeyMm.toCharArray(charPrivateKey, 65);
+  Serial.println("get:" + privateKeyMm);
+  keyID = prefs.getString("keyID");
+  Serial.println("get:" + keyID);
+  apiHost = prefs.getString("apiHost");
+  Serial.println("get:" + apiHost);
+  projectID = prefs.getString("projectID");
+  Serial.println("get:" + projectID);
+
   prefs.end();
 }
 
@@ -25,6 +39,15 @@ void setWiFiCity(){
   prefs.putString("location", location);
   prefs.end();
 }
+void setHeFeng(){
+  prefs.begin("clock");
+  prefs.putString("publicKeyMm", publicKeyMm);
+  prefs.putString("privateKeyMm", privateKeyMm);
+  prefs.putString("keyID", keyID);
+  prefs.putString("apiHost", apiHost);
+  prefs.putString("projectID", projectID);
+  prefs.end();
+}
 
 // 清除Wifi账号、密码和城市相关信息
 void clearWiFiCity(){
@@ -34,6 +57,13 @@ void clearWiFiCity(){
   prefs.remove("city");
   prefs.remove("adm");
   prefs.remove("location");
+
+  prefs.remove("publicKeyMm");
+  prefs.remove("privateKeyMm");
+  prefs.remove("keyID");
+  prefs.remove("apiHost");
+  prefs.remove("projectID");
+
   prefs.remove("backColor");
   prefs.end();
 }

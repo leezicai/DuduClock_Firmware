@@ -221,6 +221,22 @@ const String ROOT_HTML_PAGE2 PROGMEM = R"rawliteral(
         <input type='text' placeholder='请输入城市名称' name='city' id='city' class='passAndCity commonWidth'>
         <div class='titleOption commonWidth'>上级行政区划</div>
         <input type='text' placeholder='用于区分重名城市、区县，可不填' name='adm' id='adm' class='passAndCity commonWidth'>
+
+        <div class='titleOption commonWidth'>PrivateKey</div>
+        <input type='text' placeholder='请输入PrivateKey' name='privateKey' id='privateKey' class='passAndCity commonWidth'>
+
+        <div class='titleOption commonWidth'>PublicKey</div>
+        <input type='text' placeholder='请输入PublicKey' name='publicKey' id='publicKey' class='passAndCity commonWidth'>
+
+        <div class='titleOption commonWidth'>KeyID</div>
+        <input type='text' placeholder='请输入KeyID' name='keyID' id='keyID' class='passAndCity commonWidth'>
+
+        <div class='titleOption commonWidth'>ProjectID</div>
+        <input type='text' placeholder='请输入ProjectID' name='projectID' id='projectID' class='passAndCity commonWidth'>
+
+        <div class='titleOption commonWidth'>ApiHost</div>
+        <input type='text' placeholder='请输入ApiHost' name='apiHost' id='apiHost' class='passAndCity commonWidth'>
+
         <div id='sub' onclick='doSubmit()'>提交</div>
     </form>
     <script type='text/javascript'>
@@ -239,20 +255,36 @@ const String ROOT_HTML_PAGE2 PROGMEM = R"rawliteral(
                 alert('请输入城市名称');
                 return;
             }
+            if(document.getElementById('privateKey').value == ''){
+                alert('请输入PrivateKey');
+                return;
+            }
+            if(document.getElementById('publicKey').value == ''){
+                alert('请输入PublicKey');
+                return;
+            }
+            if(document.getElementById('keyID').value == ''){
+                alert('请输入KeyID');
+                return;
+            }
+            if(document.getElementById('projectID').value == ''){
+                alert('请输入ProjectID');
+                return;
+            }
+            if(document.getElementById('apiHost').value == ''){
+                alert('请输入ApiHost');
+                return;
+            }
             document.getElementById('form').submit();
         }
+
         var nodes = document.getElementsByClassName('commonWidth');
         var node = document.getElementById('sub');
         var screenWidth = window.screen.width;
         function setWidth(width){
-            nodes[0].setAttribute('style',width);
-            nodes[1].setAttribute('style',width);
-            nodes[2].setAttribute('style',width);
-            nodes[3].setAttribute('style',width);
-            nodes[4].setAttribute('style',width);
-            nodes[5].setAttribute('style',width);
-            nodes[6].setAttribute('style',width);
-            nodes[7].setAttribute('style',width);
+            for(var i=0;i<nodes.length;i++){
+                nodes[i].setAttribute('style',width);
+            }
         }
         if(screenWidth > 1000){
             setWidth('width: 40%;left: 30%;');
@@ -273,6 +305,6 @@ const String ROOT_HTML_PAGE2 PROGMEM = R"rawliteral(
     </script>
 </body>
 </html>
-)rawliteral";         
+)rawliteral";     
 
 #endif

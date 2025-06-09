@@ -10,12 +10,19 @@
 #include "arduino.h"
 #include "DuduUtil.h"
 
+char* stringToCharArray(String input) {
+  // 创建一个新的 char 数组，长度 = 字符串长度 + 1（末尾 '\0'）
+  char* tt = new char[input.length() + 1];
+  // 使用 String 自带的 toCharArray 方法复制内容
+  input.toCharArray(tt, input.length() + 1);
+  return tt;
+}
 // 和风天气身份认证，需要替换成你们自己的
-char PrivateKey[] = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";   // 私钥
-char PublicKey[] = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";        // 公钥
-String KeyID = "XXXXXXXXXX";                                                              // 凭据ID
-String ProjectID = "XXXXXXXXXX";                                                          // 项目ID
-String ApiHost = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX";                                         // API Host
+// char PrivateKey[] = "MC4CAQAwBQYDK2VwBCIEIOfum6HqGq3CQcAh+jLF9Ya+z8GCtJBQYSvJK3ZydlGb";   // 私钥
+// char PublicKey[] = "MCowBQYDK2VwAyEAVXb3A7PmObqaZ6dS804CUcCIn+mnE5HXUtbFNUaBRgI=";        // 公钥
+// String KeyID = "TDPPQDUQ82";                                                              // 凭据ID
+// String ProjectID = "46E5F9629K";                                                          // 项目ID
+// String ApiHost = "p94wct6fvw.re.qweatherapi.com";                                         // API Host
 
 void sendNTPpacket(IPAddress &address);
 void startAP();
@@ -30,6 +37,15 @@ String urlEncode(const String& text);
 bool queryNowWeatherSuccess = false;
 bool queryFutureWeatherSuccess = false;
 bool queryAirSuccess = false;
+
+// hefeng
+char charPrivateKey[65];
+char charPublicKey[61];
+String publicKeyMm;
+String privateKeyMm;
+String keyID;
+String apiHost;
+String projectID;
 
 // Wifi相关
 String ssid;  //WIFI名称
@@ -109,11 +125,58 @@ void handleConfigWifi(){
     server.send(200, "text/html", "<meta charset='UTF-8'>错误, 没有发现城市名称");
     return;
   }
+  if (server.hasArg("publicKey")){
+    Serial.print("publicKey:");
+    publicKeyMm = server.arg("publicKey");
+    Serial.println(publicKeyMm);
+  }else{
+    Serial.println("错误, 没有发现publicKey");
+    server.send(200, "text/html", "<meta charset='UTF-8'>错误, 没有发现publicKey");
+    return;
+  }
+  if (server.hasArg("privateKey")){
+    Serial.print("privateKeyMm:");
+    privateKeyMm = server.arg("privateKey");
+    Serial.println(privateKeyMm);
+  }else{
+    Serial.println("错误, 没有发现privateKey");
+    server.send(200, "text/html", "<meta charset='UTF-8'>错误, 没有发现privateKey");
+    return;
+  }
+  if (server.hasArg("keyID")){
+    Serial.print("keyID:");
+    keyID = server.arg("keyID");
+    Serial.println(keyID);
+  }else{
+    Serial.println("错误, 没有发现keyID");
+    server.send(200, "text/html", "<meta charset='UTF-8'>错误, 没有发现keyID");
+    return;
+  }
+  if (server.hasArg("apiHost")){
+    Serial.print("apiHost:");
+    apiHost = server.arg("apiHost");
+    Serial.println(apiHost);
+  }else{
+    Serial.println("错误, 没有发现apiHost");
+    server.send(200, "text/html", "<meta charset='UTF-8'>错误, 没有发现apiHost称");
+    return;
+  }
+  if (server.hasArg("projectID")){
+    Serial.print("projectID:");
+    projectID = server.arg("projectID");
+    Serial.println(projectID);
+  }else{
+    Serial.println("错误, 没有发现projectID");
+    server.send(200, "text/html", "<meta charset='UTF-8'>错误, 没有发现projectID");
+    return;
+  }
+
   Serial.print("获得上级区划:");
   adm = server.arg("adm");
   Serial.println(adm);
   // 将信息存入nvs中
   setWiFiCity();
+  setHeFeng();
   // 获得了所需要的一切信息，给客户端回复
   server.send(200, "text/html", "<meta charset='UTF-8'><style type='text/css'>body {font-size: 2rem;}</style><br/><br/>WiFi: " + ssid + "<br/>密码: " + pass + "<br/>城市: " + city + "<br/>上级区划: " + adm + "<br/>已取得相关信息,正在尝试连接,请手动关闭此页面。");
   restartSystem("即将尝试连接", false);
@@ -209,10 +272,17 @@ void scanWiFi(){
 // 查询城市id
 void getCityID(){
   // 计算jwt
-  String jwt = generateJWT(PrivateKey, PublicKey, KeyID, ProjectID);
+  Serial.println("----");
+  Serial.println(city);
+  Serial.println(charPrivateKey);
+  Serial.println(charPublicKey);
+  Serial.println(keyID);
+  Serial.println(projectID);
+  Serial.println("----");
+  String jwt = generateJWT(charPrivateKey, charPublicKey, keyID, projectID);
   // Serial.println(jwt);
   bool flag = false; // 是否成功获取到城市id的标志
-  String url = "https://" + ApiHost + cityURL + "?location=" + urlEncode(city) + "&adm=" + urlEncode(adm);
+  String url = "https://" + apiHost + cityURL + "?location=" + urlEncode(city) + "&adm=" + urlEncode(adm);
   // Serial.println(url);
   httpClient.setConnectTimeout(queryTimeout * 5);
   httpClient.begin(url);
@@ -250,9 +320,11 @@ void getCityID(){
     // 解压完，转换json数据
     StaticJsonDocument<2048> doc; //声明一个静态JsonDocument对象
     DeserializationError error = deserializeJson(doc, data); //反序列化JSON数据
+     Serial.println("正在获取城市id-----2");
     if(!error){ //检查反序列化是否成功
       //读取json节点
       String code = doc["code"].as<const char*>();
+      Serial.println("正在获取城市id-----3");
       if(code.equals("200")){
         flag = true;
         // 多结果的情况下，取第一个
@@ -279,10 +351,10 @@ void getCityID(){
 // 查询实时天气
 void getNowWeather(){
   // 计算jwt
-  String jwt = generateJWT(PrivateKey, PublicKey, KeyID, ProjectID);
+  String jwt = generateJWT(charPrivateKey, charPublicKey, keyID, projectID);
   data = "";
   queryNowWeatherSuccess = false; // 先置为false
-  String url = "https://" + ApiHost + nowURL + "?location=" + location;
+  String url = "https://" + apiHost + nowURL + "?location=" + location;
   httpClient.setConnectTimeout(queryTimeout);
   httpClient.begin(url);
   httpClient.addHeader("Authorization", "Bearer " + jwt);
@@ -351,10 +423,10 @@ void getNowWeather(){
 // 查询空气质量
 void getAir(){
   // 计算jwt
-  String jwt = generateJWT(PrivateKey, PublicKey, KeyID, ProjectID);
+  String jwt = generateJWT(charPrivateKey, charPublicKey, keyID, projectID);
   data = "";
   queryAirSuccess = false; // 先置为false
-  String url = "https://" + ApiHost + airURL + "?location=" + location;
+  String url = "https://" + apiHost + airURL + "?location=" + location;
   httpClient.setConnectTimeout(queryTimeout);
   httpClient.begin(url);
   httpClient.addHeader("Authorization", "Bearer " + jwt);
@@ -418,10 +490,10 @@ void getAir(){
 // 查询未来天气，经过实况天气一环，城市名称肯定是合法的，所以无需再检验
 void getFutureWeather(){
   // 计算jwt
-  String jwt = generateJWT(PrivateKey, PublicKey, KeyID, ProjectID);
+  String jwt = generateJWT(charPrivateKey, charPublicKey, keyID, projectID);
   data = "";
   queryFutureWeatherSuccess = false; // 先置为false
-  String url = "https://" + ApiHost + futureURL + "?location=" + location;
+  String url = "https://" + apiHost + futureURL + "?location=" + location;
   httpClient.setConnectTimeout(queryTimeout);
   httpClient.begin(url);
   httpClient.addHeader("Authorization", "Bearer " + jwt);

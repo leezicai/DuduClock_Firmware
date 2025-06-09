@@ -22,4 +22,13 @@ extern String adm;
 extern String location;
 extern bool isStartQuery;
 
+extern String publicKeyMm;
+extern String privateKeyMm;
+extern String keyID;
+extern String apiHost;
+extern String projectID;
+
+extern char charPrivateKey[65];
+extern char charPublicKey[61];
+
 #endif

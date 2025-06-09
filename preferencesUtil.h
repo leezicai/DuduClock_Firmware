@@ -3,6 +3,7 @@
 
 void getWiFiCity();
 void setWiFiCity();
+void setHeFeng();
 void clearWiFiCity();
 void setInfo4Test();
 void getBackColor();
