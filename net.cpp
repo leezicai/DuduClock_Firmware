@@ -416,6 +416,11 @@ void getNowWeather(){
   if(!queryNowWeatherSuccess){
     Serial.print("请求实时天气错误：");
     Serial.println(httpCode);
+    if(httpCode == 401){
+      clearWiFiCity();
+      Serial.print("和风天气认证失败错误401: 和风天气数据错误, 请重置配置!");
+      restartSystem("和风天气401错误", false);
+    }
   }
   //关闭与服务器连接
   httpClient.end();
