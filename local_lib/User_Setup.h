@@ -205,7 +205,7 @@
 
 //#define TFT_MISO 5
 #define TFT_MOSI	3
-#define TFT_SCLK	10
+#define TFT_SCLK	2  // Verified on DuduClock 2.1 hardware and official v2.1.2 firmware
 #define TFT_CS   	7  // Chip select control pin
 #define TFT_DC		4  // Data Command control pin
 #define TFT_RST		5  // Reset pin (could connect to RST pin)
